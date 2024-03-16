@@ -16,41 +16,43 @@ public class downloadAction extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
 		String fileName = request.getParameter("file");
-		
-		String directory = this.getServletContext().getRealPath("/upload/");
+
+		String directory = "C:/jsp/upload";
 		File file = new File(directory + "/" + fileName);
-		
+
 		String mimeType = getServletContext().getMimeType(file.toString());
-		if(mimeType == null) {
-			response.setContentType("application/octet-stream"); //2진 파일을 사용할 경우
+		if (mimeType == null) {
+			response.setContentType("application/octet-stream"); // 2진 파일을 사용할 경우
 		}
-		
+
 		String downloadName = null;
-		if(request.getHeader("user-agent").indexOf("MSIE") == -1) { //인터넷 익스플로러 사용자가 아니라면
-			downloadName = new String(fileName.getBytes("UTF-8"), "8859_1");  //8859_1로 전달하면 파일이 깨지지 않고 전달됨
+		if (request.getHeader("user-agent").indexOf("MSIE") == -1) { // 인터넷 익스플로러 사용자가 아니라면
+			downloadName = new String(fileName.getBytes("UTF-8"), "8859_1"); // 8859_1로 전달하면 파일이 깨지지 않고 전달됨
 		} else {
 			downloadName = new String(fileName.getBytes("EUC-KR"), "8859_1");
 		}
 		response.setHeader("Content-Disposition", "attachment;filename=\"" + downloadName + "\";");
-		
+
 		FileInputStream fileInputStream = new FileInputStream(file);
 		ServletOutputStream servletOutputStream = response.getOutputStream();
 
-		
 		byte b[] = new byte[1024];
 		int data = 0;
-		
-		while((data = (fileInputStream.read(b, 0, b.length))) != -1) {
+
+		while ((data = (fileInputStream.read(b, 0, b.length))) != -1) {
 			servletOutputStream.write(b, 0, data);
 		}
-	
+		
+		new FileDAO().hit(fileName);
+		
+
 		servletOutputStream.flush();
 		servletOutputStream.close();
 		fileInputStream.close();
-		}
+	}
 
 }
